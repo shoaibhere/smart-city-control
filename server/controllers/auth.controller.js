@@ -65,6 +65,14 @@ export const login = async (req, res) => {
       expiresIn: '30d'
     });
     console.log("success login")
+    
+    res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // ✅ only secure in prod
+    sameSite: 'Strict', // ✅ 'Strict' or 'Lax' is safest
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+
     res.json({
       token,
       user: {

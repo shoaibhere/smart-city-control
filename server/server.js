@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,12 +18,29 @@ import index from './routes/index.js';
 
 // Create Express app
 const app = express();
+app.use(cookieParser()); //parse incoming cookie
+
+
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:8081', // Your client origin
+  credentials: true, // Allow credentials (cookies, authorization headers)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+};
+
+// // Enable CORS with options
+// app.use(cors(corsOptions));
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 // Body parser
 app.use(express.json());
-
-// Enable CORS
-app.use(cors());
 
 // Mount routers
 app.use('/api/', index);

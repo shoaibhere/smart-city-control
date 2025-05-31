@@ -7,27 +7,36 @@ import { useNavigate } from 'react-router-dom';
 
 const CitizenDashboard = () => {
   const navigate = useNavigate();
-
+  
   const [stats, setStats] = useState([]);
   const [myIssues, setMyIssues] = useState([]);
   const [activePolls, setActivePolls] = useState([]);
-
+  
   useEffect(() => {
+    console.log("CitizenDashboard mounted");
+    axios.defaults.withCredentials = true;
     const fetchDashboardData = async () => {
-      try {
-        const [statsRes, issuesRes, pollsRes] = await Promise.all([
-          axios.get('http://localhost:8000/api/dashboard/stats'),
-          axios.get('http://localhost:8000/api/dashboard/my-issues'),
-          axios.get('http://localhost:8000/api/dashboard/active-polls'),
-        ]);
+  try {
+    console.log("Fetching stats...");
+    const statsRes = await axios.get('http://localhost:8000/api/users/stats');
+    console.log("Stats:", statsRes.data);
 
-        setStats(statsRes.data);
-        setMyIssues(issuesRes.data);
-        setActivePolls(pollsRes.data);
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
-      }
-    };
+    console.log("Fetching issues...");
+    const issuesRes = await axios.get('http://localhost:8000/api/users/my-issues');
+    console.log("Issues:", issuesRes.data);
+
+    console.log("Fetching polls...");
+    const pollsRes = await axios.get('http://localhost:8000/api/users/active-polls');
+    console.log("Polls:", pollsRes.data);
+
+    setStats(statsRes.data);
+    setMyIssues(issuesRes.data);
+    setActivePolls(pollsRes.data);
+  } catch (error) {
+    console.error('Failed to load dashboard data:', error);
+  }
+};
+
 
     fetchDashboardData();
   }, []);

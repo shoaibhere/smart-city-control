@@ -13,6 +13,8 @@ import DepartmentDashboard from "./pages/Dashboard/DepartmentDashboard";
 import CitizenDashboard from "./pages/Dashboard/CitizenDashboard";
 import ReportIssue from "./pages/Dashboard/Citizen/ReportIssue";
 import NotFound from "./pages/NotFound";
+import { Users } from "lucide-react";
+import AdminUsersPage from "./pages/Dashboard/Users"
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,7 @@ const App = () => (
           
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route path="admin" element={<AdminDashboard />} />
+            <Route path="admin/users" element={<AdminUsersPage />} />
             <Route path="department" element={<DepartmentDashboard />} />
             <Route path="citizen" element={<CitizenDashboard />} />
             <Route path="citizen/report" element={<ReportIssue />} />

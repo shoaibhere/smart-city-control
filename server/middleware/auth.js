@@ -1,53 +1,57 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/users.model.js';
 
-// 🔐 Protect Route (used as "protect")
 export const protect = async (req, res, next) => {
   let token;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  // Check both header and cookies
+  if (req.headers.authorization?.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies?.token) {
+    token = req.cookies.token;
   }
 
   if (!token) {
-    return res.status(401).json({ msg: 'Not authorized to access this route' });
+    return res.status(401).json({ message: 'Not authorized to access this route' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.user.id).select('-password');
+
+    if (!decoded?.id) {
+      return res.status(401).json({ message: 'Invalid token structure' });
+    }
+
+    req.user = await User.findById(decoded.id).select('-password');
 
     if (!req.user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     next();
   } catch (err) {
-    console.error(err.message);
-    res.status(401).json({ msg: 'Invalid token' });
+    console.error('Authentication error:', err.message);
+    
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired, please login again' });
+    }
+    res.status(401).json({ message: 'Invalid token' });
   }
 };
 
-// ✅ Admin-only Access
-export const admin = (req, res, next) => {
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ msg: 'Admin access only' });
-  }
-  next();
+// Flexible role checker
+export const role = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!allowedRoles.includes(req.user.role?.toLowerCase())) {
+      return res.status(403).json({ 
+        message: `Access restricted to: ${allowedRoles.join(', ')}` 
+      });
+    }
+    next();
+  };
 };
 
-// ✅ Citizen-only Access
-export const citizen = (req, res, next) => {
-  if (req.user.role !== 'Citizen') {
-    return res.status(403).json({ msg: 'Citizen access only' });
-  }
-  next();
-};
-
-// ✅ Department Official-only Access
-export const department = (req, res, next) => {
-  if (req.user.role !== 'Department Official') {
-    return res.status(403).json({ msg: 'Department Official access only' });
-  }
-  next();
-};
+// Specific role checkers (optional, for backward compatibility)
+export const admin = role('admin');
+export const citizen = role('citizen');
+export const department = role('department');

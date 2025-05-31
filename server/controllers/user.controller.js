@@ -3,6 +3,20 @@ import Department from '../models/department.js';
 
 // @desc    Get all users (Admin only)
 // @route   GET /api/users
+export const deactivateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.isActive = false;
+    await user.save();
+
+    res.status(200).json({ message: 'User deactivated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 export const getUsers = async (req, res) => {
   try {
     // Admin can see all users, department officials can see citizens

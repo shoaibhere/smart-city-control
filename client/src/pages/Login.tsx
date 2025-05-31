@@ -16,49 +16,55 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const data = await authAPI.login(email, password);
-      
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome to Smart City Dashboard",
-      });
+  try {
+    const data = await authAPI.login(email, password);
+    
+    // Store user data in localStorage (non-sensitive info only)
+    localStorage.setItem('user', JSON.stringify(data.user));
+    
+    toast({
+      title: "Login successful",
+      description: "Welcome to Smart City Dashboard",
+    });
 
-      // Redirect based on role
-      const role = data.user.role;
-      navigate(`/dashboard/${role}`);
-    } catch (error: any) {
-      console.error('Login error:', error);
-      
-      // Fallback to mock login for demo purposes
-      const mockUser = { 
-        id: 1, 
-        name: 'Demo User', 
-        email: email, 
-        role: email.includes('admin') ? 'admin' : email.includes('dept') ? 'department' : 'citizen' 
-      };
-      const mockToken = 'demo-jwt-token';
-      
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      
-      toast({
-        title: "Login successful (Demo Mode)",
-        description: "Using mock authentication",
-      });
-      
-      navigate(`/dashboard/${mockUser.role}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Redirect based on role
+    const role = data.user.role.toLowerCase();
+    setTimeout(() => {
+  navigate(`/dashboard/${role}`);
+}, 100); // 100ms delay to help diagnose timing issues
+
+  } catch (error: any) {
+    console.error('Login error:', error);
+    
+    // Fallback to mock login for demo purposes
+    const mockUser = { 
+      id: 1, 
+      name: 'Demo User', 
+      email: email, 
+      role: email.includes('admin') ? 'admin' : 
+            email.includes('dept') ? 'department' : 'citizen' 
+    };
+    
+    // Store mock user in localStorage
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    
+    // Set mock HTTP-only cookie
+    document.cookie = `token=demo-jwt-token; path=/; secure; samesite=strict; max-age=${60 * 60 * 24}`;
+    
+    toast({
+      title: "Login successful (Demo Mode)",
+      description: "Using mock authentication",
+    });
+    
+    navigate(`/dashboard/${mockUser.role}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 flex items-center justify-center p-4">

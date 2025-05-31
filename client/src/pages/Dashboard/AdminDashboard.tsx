@@ -1,37 +1,70 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ClipboardList, Vote, FileText, TrendingUp, MapPin } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import {
+  Users,
+  ClipboardList,
+  Vote,
+  FileText,
+  TrendingUp,
+  MapPin,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 const AdminDashboard = () => {
-  const stats = [
-    { label: 'Total Users', value: '2,847', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Active Issues', value: '156', icon: ClipboardList, color: 'text-red-600', bg: 'bg-red-50' },
-    { label: 'Active Polls', value: '12', icon: Vote, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Reports Filed', value: '89', icon: FileText, color: 'text-purple-600', bg: 'bg-purple-50' },
-  ];
+  const [stats, setStats] = useState([]);
+  const [recentIssues, setRecentIssues] = useState([]);
 
-  const recentIssues = [
-    { id: 1, title: 'Pothole on Main Street', status: 'In Progress', department: 'Roads', priority: 'High' },
-    { id: 2, title: 'Broken Streetlight', status: 'Assigned', department: 'Electrical', priority: 'Medium' },
-    { id: 3, title: 'Garbage Collection Delay', status: 'Pending', department: 'Sanitation', priority: 'Low' },
-    { id: 4, title: 'Park Maintenance Required', status: 'Resolved', department: 'Parks', priority: 'Medium' },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [statsRes, issuesRes] = await Promise.all([
+          axios.get('http://localhost:8000/api/admin/stats', { withCredentials: true }),
+          axios.get('http://localhost:8000/api/admin/recent-issues', { withCredentials: true }),
+        ]);
+
+        setStats(statsRes.data); // Ensure your API returns array of objects with label, value, iconKey
+        setRecentIssues(issuesRes.data); // Array of recent issue objects
+      } catch (error) {
+        console.error('Error fetching admin dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const iconMap: any = {
+    Users,
+    ClipboardList,
+    Vote,
+    FileText,
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Resolved': return 'bg-green-100 text-green-800';
-      case 'In Progress': return 'bg-blue-100 text-blue-800';
-      case 'Assigned': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Resolved':
+        return 'bg-green-100 text-green-800';
+      case 'In Progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'Assigned':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'High': return 'bg-red-100 text-red-800';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-green-100 text-green-800';
+      case 'High':
+        return 'bg-red-100 text-red-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-green-100 text-green-800';
     }
   };
 
@@ -44,21 +77,24 @@ const AdminDashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+        {stats.map((stat: any, index: number) => {
+          const Icon = iconMap[stat.iconKey];
+          return (
+            <Card key={index} className="border-0 shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                  <div className={`p-3 rounded-full ${stat.bg}`}>
+                    {Icon && <Icon className={`h-6 w-6 ${stat.color}`} />}
+                  </div>
                 </div>
-                <div className={`p-3 rounded-full ${stat.bg}`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -72,17 +108,24 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentIssues.map((issue) => (
-                <div key={issue.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              {recentIssues.map((issue: any) => (
+                <div
+                  key={issue.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                >
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900">{issue.title}</h4>
                     <p className="text-sm text-gray-600">{issue.department}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(issue.priority)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(issue.priority)}`}
+                    >
                       {issue.priority}
                     </span>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(issue.status)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(issue.status)}`}
+                    >
                       {issue.status}
                     </span>
                   </div>

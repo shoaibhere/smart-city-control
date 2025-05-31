@@ -36,11 +36,11 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
+    const response = await api.post('/auth/login', { email, password },{withCredentials:true});
     return response.data;
   },
   register: async (username: string,firstName:string,lastName:string, email: string, password: string) => {
-    const response = await api.post('/auth/register', { username,firstName,lastName, email, password});
+    const response = await api.post('/auth/register', { username,firstName,lastName, email, password},{withCredentials:true});
     return response.data;
   },
 };
