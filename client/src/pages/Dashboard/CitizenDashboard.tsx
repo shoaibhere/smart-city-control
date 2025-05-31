@@ -26,12 +26,14 @@ const CitizenDashboard = () => {
     console.log("Issues:", issuesRes.data);
 
     console.log("Fetching polls...");
-    const pollsRes = await axios.get('http://localhost:8000/api/users/active-polls');
-    console.log("Polls:", pollsRes.data);
+    const res = await axios.get('http://localhost:8000/api/polls', { withCredentials: true });
+    const now = new Date();
+    const pollsRes = res.data.filter(poll => new Date(poll.deadline) > now);
+    console.log("Polls:", pollsRes);
 
     setStats(statsRes.data);
     setMyIssues(issuesRes.data);
-    setActivePolls(pollsRes.data);
+    setActivePolls(pollsRes);
   } catch (error) {
     console.error('Failed to load dashboard data:', error);
   }

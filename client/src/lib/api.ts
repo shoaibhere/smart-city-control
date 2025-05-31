@@ -45,21 +45,20 @@ export const authAPI = {
   },
 };
 
-// Issues API
+// lib/api.ts
 export const issuesAPI = {
-  getAll: async () => {
-    const response = await api.get('/issues');
-    return response.data;
-  },
-  create: async (issueData: any) => {
-    const response = await api.post('/issues', issueData);
-    return response.data;
-  },
-  updateStatus: async (id: string, status: string) => {
-    const response = await api.put(`/issues/${id}/status`, { status });
-    return response.data;
-  },
+create: async (data: FormData) => {
+  return await axios.post('http://localhost:8000/api/issues', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      
+    },
+    withCredentials:true
+  });
+}
+
 };
+
 
 // Polls API
 export const pollsAPI = {

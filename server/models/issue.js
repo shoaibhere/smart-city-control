@@ -15,17 +15,6 @@ const issueSchema = new mongoose.Schema({
     required: true
   },
   images: [String], // Array of Cloudinary URLs
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      required: true
-    },
-    coordinates: {
-      type: [Number],
-      required: true
-    }
-  },
   status: {
     type: String,
     enum: ['Pending', 'Assigned', 'In Progress', 'Resolved'],

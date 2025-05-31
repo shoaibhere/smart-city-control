@@ -7,7 +7,6 @@ import pollRoutes from './polls.js';
 import reportRoutes from './reports.js';
 import chatRoutes from './chats.js';
 import adminRoutes from './admin.js';
-import { protect } from '../middleware/auth.js';
 import cookieParser from 'cookie-parser';
 import User from '../models/users.model.js';
 import jwt from 'jsonwebtoken';

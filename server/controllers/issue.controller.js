@@ -29,6 +29,74 @@ export const getIssues = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+export const getSingleIssue = async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id)
+      .populate('reportedBy', 'username profile')
+      .populate('assignedTo', 'username profile');
+
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+
+    // Citizens can only view their own issues
+    if (req.user.role === 'citizen' && !issue.reportedBy._id.equals(req.user._id)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    res.json(issue);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const updateIssue = async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+
+    const isReporter = issue.reportedBy.equals(req.user._id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isReporter && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to update this issue' });
+    }
+
+    const { title, description, category } = req.body;
+
+    if (title) issue.title = title;
+    if (description) issue.description = description;
+    if (category) issue.category = category;
+
+    await issue.save();
+    res.json(issue);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const deleteIssue = async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+
+    const isReporter = issue.reportedBy.equals(req.user._id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isReporter && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to delete this issue' });
+    }
+
+    await issue.deleteOne();
+
+    res.json({ message: 'Issue deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 export const createIssue = async (req, res) => {
   try {
@@ -36,7 +104,7 @@ export const createIssue = async (req, res) => {
       return res.status(403).json({ message: 'Only citizens can report issues' });
     }
 
-    const { title, description, category, location } = req.body;
+    const { title, description, category,  } = req.body;
     
     let images = [];
     if (req.files) {
@@ -53,10 +121,6 @@ export const createIssue = async (req, res) => {
       description,
       category,
       images,
-      location: {
-        type: 'Point',
-        coordinates: JSON.parse(location)
-      },
       reportedBy: req.user.id
     });
 

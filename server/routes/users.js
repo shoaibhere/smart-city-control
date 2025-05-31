@@ -129,7 +129,7 @@ router.get('/active-polls', protect, async (req, res) => {
       endsIn: formatTimeRemaining(poll.endDate) // Helper function below
     }));
 
-    res.json(pollsWithVotedStatus);
+    res.json(polls);
   } catch (error) {
     console.error('Error fetching active polls:', error);
     res.status(500).json({ error: 'Server error fetching active polls' });

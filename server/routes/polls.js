@@ -1,8 +1,11 @@
 import express from 'express';
 import {
   getPolls,
+  getActivePolls,
   createPoll,
-  voteOnPoll
+  voteOnPoll,
+  updatePoll,
+  deletePoll,
 } from '../controllers/polls.controller.js';
 
 import {
@@ -18,8 +21,13 @@ import {
 
 const router = express.Router();
 
+// 🔹 Get all polls (admin)
 router.get('/', protect, getPolls);
 
+// 🔹 Get active polls (citizens)
+router.get('/active', protect, citizen, getActivePolls);
+
+// 🔹 Create poll (admin only)
 router.post(
   '/',
   protect,
@@ -29,12 +37,20 @@ router.post(
   createPoll
 );
 
+// 🔹 Vote on a poll (citizens)
 router.post('/:id/vote', protect, citizen, voteOnPoll);
-// GET /api/polls/active
-router.get('/active', protect, async (req, res) => {
-  const activePolls = await Poll.find({ expiresAt: { $gte: new Date() } });
-  res.json(activePolls);
-});
 
+// 🔹 Update poll (admin only)
+router.put(
+  '/:id',
+  protect,
+  admin,
+  uploadSingle('image'),
+  cleanupTempFiles,
+  updatePoll
+);
+
+// 🔹 Delete poll (admin only)
+router.delete('/:id', protect, admin, deletePoll);
 
 export default router;

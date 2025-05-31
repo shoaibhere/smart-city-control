@@ -3,7 +3,10 @@ import {
   getIssues,
   createIssue,
   assignIssue,
-  updateIssueStatus
+  updateIssueStatus,
+  getSingleIssue,
+  updateIssue,
+  deleteIssue,
 } from '../controllers/issue.controller.js';
 
 import {
@@ -30,6 +33,9 @@ router.post(
   cleanupTempFiles,
   createIssue
 );
+router.get('/:id', protect, getSingleIssue);
+router.put('/:id', protect, updateIssue); // Reporter or Admin
+router.delete('/:id', protect, deleteIssue); // Reporter or Admin
 
 router.put('/:id/assign', protect, admin, assignIssue);
 router.put('/:id/status', protect, department, updateIssueStatus);

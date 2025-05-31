@@ -1,5 +1,9 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import dotenv from 'dotenv';
+
+// Load env vars
+dotenv.config({ path: ".env.local" });
 
 // Configure Cloudinary with your credentials
 cloudinary.config({

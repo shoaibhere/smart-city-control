@@ -15,6 +15,9 @@ import ReportIssue from "./pages/Dashboard/Citizen/ReportIssue";
 import NotFound from "./pages/NotFound";
 import { Users } from "lucide-react";
 import AdminUsersPage from "./pages/Dashboard/Users"
+import AdminPollManager from "./pages/AdminPolls";
+import CitizenPolls from "./pages/CitizenPolls";
+import IssuesRUDPage from "./pages/Issues";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +35,9 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="admin/users" element={<AdminUsersPage />} />
+            <Route path="admin/polls" element={<AdminPollManager />} />
+            <Route path="citizen/polls" element={<CitizenPolls />} />
+            <Route path="citizen/issues" element={<IssuesRUDPage />} />
             <Route path="department" element={<DepartmentDashboard />} />
             <Route path="citizen" element={<CitizenDashboard />} />
             <Route path="citizen/report" element={<ReportIssue />} />

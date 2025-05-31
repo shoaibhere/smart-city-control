@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,10 +15,9 @@ const ReportIssue = () => {
     title: '',
     description: '',
     category: '',
-    priority: 'medium'
   });
+
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; address: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -47,45 +45,30 @@ const ReportIssue = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setLoading(true);
 
     try {
-      const issueData = {
-        ...formData,
-        location: selectedLocation || { lat: 0, lng: 0, address: 'Location not specified' },
-        image: imageFile ? URL.createObjectURL(imageFile) : null,
-        reportedAt: new Date().toISOString(),
-        status: 'Pending',
-      };
+      const payload = new FormData();
+      payload.append('title', formData.title);
+      payload.append('description', formData.description);
+      payload.append('category', formData.category);
 
-      console.log('Submitting issue to API:', issueData);
-      
-      // Try to submit to real API
-      try {
-        await issuesAPI.create(issueData);
-        toast({
-          title: "Issue reported successfully",
-          description: "Your report has been submitted to the city officials.",
-        });
-      } catch (apiError) {
-        console.log('API call failed, using mock submission');
-        toast({
-          title: "Issue reported successfully (Demo)",
-          description: "Your report has been submitted (mock mode).",
-        });
+      if (imageFile) {
+        payload.append('images', imageFile); // your backend supports multiple images
       }
 
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        category: '',
-        priority: 'medium'
-      });
-      setImageFile(null);
-      setSelectedLocation(null);
+      await issuesAPI.create(payload); // implement with fetch/Axios
 
+      toast({
+        title: "Issue reported successfully",
+        description: "Your report has been submitted to city officials.",
+      });
+
+      setFormData({ title: '', description: '', category: '' });
+      setImageFile(null);
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Failed to submit your report. Please try again.",
@@ -137,29 +120,6 @@ const ReportIssue = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority Level</Label>
-              <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Location *</Label>
-              <IssueMap 
-                selectedLocation={selectedLocation}
-                onLocationSelect={setSelectedLocation}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="description">Description *</Label>
               <Textarea
                 id="description"
@@ -176,15 +136,15 @@ const ReportIssue = () => {
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
                 {imageFile ? (
                   <div className="space-y-2">
-                    <img 
-                      src={URL.createObjectURL(imageFile)} 
-                      alt="Issue preview" 
+                    <img
+                      src={URL.createObjectURL(imageFile)}
+                      alt="Issue preview"
                       className="mx-auto h-32 w-auto rounded-lg"
                     />
                     <p className="text-sm text-gray-600">{imageFile.name}</p>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       onClick={() => setImageFile(null)}
                     >
@@ -218,10 +178,10 @@ const ReportIssue = () => {
             </div>
 
             <div className="flex items-center gap-4 pt-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
-                disabled={loading || !selectedLocation}
+                disabled={loading}
               >
                 {loading ? 'Submitting...' : 'Submit Report'}
               </Button>
@@ -233,7 +193,6 @@ const ReportIssue = () => {
         </CardContent>
       </Card>
 
-      {/* Info Card */}
       <Card className="border-0 shadow-sm bg-blue-50">
         <CardContent className="p-4">
           <h3 className="font-medium text-blue-900 mb-2">What happens next?</h3>
@@ -241,7 +200,7 @@ const ReportIssue = () => {
             <li>• Your report will be reviewed by our team</li>
             <li>• We'll assign it to the appropriate department</li>
             <li>• You'll receive updates on the progress</li>
-            <li>• Typical response time is 24-48 hours</li>
+            <li>• Typical response time is 24–48 hours</li>
           </ul>
         </CardContent>
       </Card>
