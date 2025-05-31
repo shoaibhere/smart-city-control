@@ -1,0 +1,30 @@
+/*
+User
+  there are three types of users and a separate dashboard for every type of user, by default after signup, it is a citizen
+  Admin, Citizen, Department Official
+  Admin can
+    Create Update delete citizen and department official
+    it can change or assign user roles/types of users
+    it recieves issues reported by citizens
+    it assigns those issues to department officials
+    it can access reports/analytics uploaded by dep officials
+    it can post polls on which the citizens will vote on
+      Polls has a deadline
+      Polls can have images (optional) use cloudinary for image upload
+      Citizens can view polls results dynamically and the deadline
+      it can have multiple choice answers as decided by admin when posted
+  Department Official can
+    upload reports
+    update project/issue status (Pending → Assigned → In Progress → Resolved)
+    chat with other department members and admins
+    chat can be group chats too
+    view assign and update the status of issue
+    Assistance: Use AR to view real-time data overlays while in the field
+    (e.g., issue locations, infrastructure details).
+  Citizen can
+    submit an issue to admin (image upload optional but use cloudinary), location tagginh by intetgrating maps
+    view issues status
+    vote in public polls posted by admin (view results and deadlines dynamically)
+    Use AR to report issues more accurately by capturing and
+    categorizing issues in real-time.
+*/
