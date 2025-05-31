@@ -27,4 +27,498 @@ User
     vote in public polls posted by admin (view results and deadlines dynamically)
     Use AR to report issues more accurately by capturing and
     categorizing issues in real-time.
+
+
+    ask it to properly create all the pages for every user that exists with proper beautiful styling i want to win thiss here are all the models so it knows what to send or receive from APIs
+    // models/ARSession.js
+import mongoose from 'mongoose';
+
+const arSessionSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  issue: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Issue'
+  },
+  sessionData: Object, // Stores AR session-specific data
+  markers: [{
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number],
+      required: true
+    },
+    data: Object // Additional marker data
+  }],
+  startedAt: {
+    type: Date,
+    default: Date.now
+  },
+  endedAt: Date
+});
+
+// Index for geospatial queries
+arSessionSchema.index({ 'markers': '2dsphere' });
+
+const ARSession = mongoose.model('ARSession', arSessionSchema);
+export default ARSession
+
+// models/Chat.js
+import mongoose from 'mongoose';
+
+const messageSchema = new mongoose.Schema({
+  sender: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now
+  },
+  readBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
+});
+
+const chatSchema = new mongoose.Schema({
+  participants: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }],
+  isGroupChat: {
+    type: Boolean,
+    default: false
+  },
+  groupName: String,
+  groupAdmin: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  messages: [messageSchema],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  lastMessage: messageSchema
+});
+
+const Chat = mongoose.model('Chat', chatSchema);
+export default Chat;
+
+// models/Department.js
+import mongoose from 'mongoose';
+
+const departmentSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  description: String,
+  location: String,
+  contactEmail: String,
+  contactPhone: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Department = mongoose.model('Department', departmentSchema);
+export default Department;
+
+// models/Issue.js
+import mongoose from 'mongoose';
+
+const issueSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: String,
+    required: true
+  },
+  images: [String], // Array of Cloudinary URLs
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number],
+      required: true
+    }
+  },
+  status: {
+    type: String,
+    enum: ['Pending', 'Assigned', 'In Progress', 'Resolved'],
+    default: 'Pending'
+  },
+  reportedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  assignedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  assignedAt: Date,
+  resolvedAt: Date,
+  arData: {
+    type: Object // For storing AR-related data
+  },
+  comments: [{
+    text: String,
+    postedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Index for geospatial queries
+issueSchema.index({ location: '2dsphere' });
+
+const Issue = mongoose.model('Issue', issueSchema);
+export default Issue;
+
+// models/Notification.js
+import mongoose from 'mongoose';
+
+const notificationSchema = new mongoose.Schema({
+  recipient: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  sender: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  type: {
+    type: String,
+    enum: ['issue', 'poll', 'report', 'message', 'assignment', 'status'],
+    required: true
+  },
+  relatedEntity: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+  message: String,
+  isRead: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Notification =  mongoose.model('Notification', notificationSchema);
+export default Notification;
+
+// models/Poll.js
+import mongoose from 'mongoose';
+
+const pollSchema = new mongoose.Schema({
+  question: {
+    type: String,
+    required: true
+  },
+  options: [{
+    text: {
+      type: String,
+      required: true
+    },
+    votes: {
+      type: Number,
+      default: 0
+    },
+    voters: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }]
+  }],
+  image: String, // Cloudinary URL
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  deadline: {
+    type: Date,
+    required: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  totalVotes: {
+    type: Number,
+    default: 0
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Poll = mongoose.model('Poll', pollSchema);
+export default Poll;
+
+import mongoose from 'mongoose';
+
+const reportSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  description: String,
+  files: [String], // Array of Cloudinary URLs for reports/documents
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  department: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Department',
+    required: true
+  },
+  relatedIssues: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Issue'
+  }],
+  metrics: Object, // For storing various analytics data
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Report = mongoose.model('Report', reportSchema);
+export default Report;
+
+
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'citizen', 'department'],
+    default: 'citizen'
+  },
+  profile: {
+    firstName: String,
+    lastName: String,
+    avatar: String, // Cloudinary URL
+    contactNumber: String,
+    address: String
+  },
+  department: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Department'
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastLogin: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+const User = mongoose.model('User', userSchema);
+export default User;
+
+here are routes
+
+import express from 'express';
+import { register, login, getMe } from '../controllers/auth.controller.js';
+import { protect } from '../middleware/auth.js';
+import { uploadSingle } from '../utils/multer.js';
+
+const router = express.Router();
+
+router.post('/register', uploadSingle('avatar'), register);
+router.post('/login', login);
+router.get('/me', protect, getMe);
+
+export default router;
+
+import express from 'express';
+import {
+  getChats,
+  createChat,
+  createGroupChat,
+  sendMessage
+} from '../controllers/chat.controller.js';
+
+import { protect } from '../middleware/auth.js';
+
+const router = express.Router();
+
+router.get('/', protect, getChats);
+router.post('/', protect, createChat);
+router.post('/group', protect, createGroupChat);
+router.post('/:id/messages', protect, sendMessage);
+
+export default router;
+
+// routes/index.js
+import express from 'express';
+import authRoutes from './auth.js';
+import userRoutes from './users.js';
+import issueRoutes from './issues.js';
+import pollRoutes from './polls.js';
+import reportRoutes from './reports.js';
+import chatRoutes from './chats.js';
+
+const router = express.Router();
+
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
+router.use('/issues', issueRoutes);
+router.use('/polls', pollRoutes);
+router.use('/reports', reportRoutes);
+router.use('/chats', chatRoutes);
+
+export default router;
+
+import express from 'express';
+import {
+  getIssues,
+  createIssue,
+  assignIssue,
+  updateIssueStatus
+} from '../controllers/issue.controller.js';
+
+import {
+  protect,
+  citizen,
+  department,
+  admin
+} from '../middleware/auth.js';
+
+import {
+  uploadMultiple,
+  cleanupTempFiles
+} from '../utils/multer.js';
+
+const router = express.Router();
+
+router.get('/', protect, getIssues);
+
+router.post(
+  '/',
+  protect,
+  citizen,
+  uploadMultiple('images', 5),
+  cleanupTempFiles,
+  createIssue
+);
+
+router.put('/:id/assign', protect, admin, assignIssue);
+router.put('/:id/status', protect, department, updateIssueStatus);
+
+export default router;
+
+import express from 'express';
+import {
+  getReports,
+  createReport
+} from '../controllers/reports.controller.js';
+
+import {
+  protect,
+  department,
+  admin
+} from '../middleware/auth.js';
+
+const router = express.Router();
+
+router.get('/', protect, getReports);
+router.post('/', protect, department, createReport);
+
+export default router;
+
+import express from 'express';
+import {
+  getUsers,
+  createUser,
+  updateUserRole,
+  deleteUser
+} from '../controllers/user.controller.js';
+
+import {
+  protect,
+  admin
+} from '../middleware/auth.js';
+
+const router = express.Router();
+
+router.get('/', protect, admin, getUsers);
+router.post('/', protect, admin, createUser);
+router.put('/:id/role', protect, admin, updateUserRole);
+router.delete('/:id', protect, admin, deleteUser);
+
+export default router;
+
 */

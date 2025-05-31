@@ -30,5 +30,11 @@ router.post(
 );
 
 router.post('/:id/vote', protect, citizen, voteOnPoll);
+// GET /api/polls/active
+router.get('/active', protect, async (req, res) => {
+  const activePolls = await Poll.find({ expiresAt: { $gte: new Date() } });
+  res.json(activePolls);
+});
+
 
 export default router;

@@ -11,7 +11,9 @@ import { authAPI } from '@/lib/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
+    firstName:'',
+    lastName:'',
     email: '',
     password: '',
     confirmPassword: ''
@@ -42,7 +44,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await authAPI.register(formData.name, formData.email, formData.password);
+      await authAPI.register(formData.username,formData.firstName,formData.lastName, formData.email, formData.password);
       
       toast({
         title: "Registration successful",
@@ -85,13 +87,39 @@ const Register = () => {
           <CardContent>
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="username"
+                  name="username"
                   type="text"
-                  placeholder="John Doe"
-                  value={formData.name}
+                  placeholder="johndoe123"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                  className="h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  placeholder="John"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  className="h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  placeholder="Doe"
+                  value={formData.lastName}
                   onChange={handleChange}
                   required
                   className="h-12"

@@ -33,5 +33,11 @@ router.post(
 
 router.put('/:id/assign', protect, admin, assignIssue);
 router.put('/:id/status', protect, department, updateIssueStatus);
+// GET /api/issues/my
+router.get('/my', protect, async (req, res) => {
+  const issues = await Issue.find({ user: req.user._id }).sort({ createdAt: -1 });
+  res.json(issues);
+});
+
 
 export default router;

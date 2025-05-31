@@ -1,5 +1,5 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClipboardList, Vote, FileText, MapPin, Plus, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,56 +8,43 @@ import { useNavigate } from 'react-router-dom';
 const CitizenDashboard = () => {
   const navigate = useNavigate();
 
-  const stats = [
-    { label: 'My Reports', value: '7', icon: ClipboardList, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Resolved Issues', value: '4', icon: FileText, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Active Polls', value: '3', icon: Vote, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Community Score', value: '92', icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50' },
-  ];
+  const [stats, setStats] = useState([]);
+  const [myIssues, setMyIssues] = useState([]);
+  const [activePolls, setActivePolls] = useState([]);
 
-  const myIssues = [
-    { 
-      id: 1, 
-      title: 'Broken Streetlight', 
-      location: 'My Street, 456', 
-      status: 'In Progress',
-      reportedAt: '3 days ago',
-      department: 'Electrical'
-    },
-    { 
-      id: 2, 
-      title: 'Pothole Report', 
-      location: 'Main Avenue, 123', 
-      status: 'Resolved',
-      reportedAt: '1 week ago',
-      department: 'Roads'
-    },
-    { 
-      id: 3, 
-      title: 'Noise Complaint', 
-      location: 'Park Plaza', 
-      status: 'Assigned',
-      reportedAt: '2 days ago',
-      department: 'Public Safety'
-    },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [statsRes, issuesRes, pollsRes] = await Promise.all([
+          axios.get('http://localhost:8000/api/dashboard/stats'),
+          axios.get('http://localhost:8000/api/dashboard/my-issues'),
+          axios.get('http://localhost:8000/api/dashboard/active-polls'),
+        ]);
 
-  const activePolls = [
-    {
-      id: 1,
-      question: 'Should we add more bike lanes in downtown?',
-      options: ['Yes, more bike lanes', 'No, keep current', 'Need more parking instead'],
-      voted: false,
-      endsIn: '2 days'
-    },
-    {
-      id: 2,
-      question: 'Which park improvement is most important?',
-      options: ['New playground equipment', 'Better lighting', 'More benches'],
-      voted: true,
-      endsIn: '5 days'
-    },
-  ];
+        setStats(statsRes.data);
+        setMyIssues(issuesRes.data);
+        setActivePolls(pollsRes.data);
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const iconMap = {
+    'My Reports': ClipboardList,
+    'Resolved Issues': FileText,
+    'Active Polls': Vote,
+    'Community Score': TrendingUp,
+  };
+
+  const colorMap = {
+    'My Reports': { color: 'text-blue-600', bg: 'bg-blue-50' },
+    'Resolved Issues': { color: 'text-green-600', bg: 'bg-green-50' },
+    'Active Polls': { color: 'text-purple-600', bg: 'bg-purple-50' },
+    'Community Score': { color: 'text-orange-600', bg: 'bg-orange-50' },
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,21 +64,26 @@ const CitizenDashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+        {stats.map((stat: any, index: number) => {
+          const Icon = iconMap[stat.label] || ClipboardList;
+          const colors = colorMap[stat.label] || { color: 'text-gray-600', bg: 'bg-gray-50' };
+
+          return (
+            <Card key={index} className="border-0 shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                  <div className={`p-3 rounded-full ${colors.bg}`}>
+                    <Icon className={`h-6 w-6 ${colors.color}`} />
+                  </div>
                 </div>
-                <div className={`p-3 rounded-full ${stat.bg}`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -115,13 +107,15 @@ const CitizenDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {myIssues.map((issue) => (
+              {myIssues.map((issue: any) => (
                 <div key={issue.id} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900">{issue.title}</h4>
                       <p className="text-sm text-gray-600">{issue.location}</p>
-                      <p className="text-xs text-gray-500">Reported {issue.reportedAt} • {issue.department}</p>
+                      <p className="text-xs text-gray-500">
+                        Reported {issue.reportedAt} • {issue.department}
+                      </p>
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(issue.status)}`}>
                       {issue.status}
@@ -152,7 +146,7 @@ const CitizenDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {activePolls.map((poll) => (
+              {activePolls.map((poll: any) => (
                 <div key={poll.id} className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-medium text-gray-900 mb-2">{poll.question}</h4>
                   <p className="text-sm text-gray-600 mb-3">Ends in {poll.endsIn}</p>
