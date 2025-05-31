@@ -16,7 +16,7 @@ const DashboardLayout = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('/api/me', {
+        const res = await fetch('http://localhost:8000/api/me/', {
           method: 'GET',
           credentials: 'include', // ✅ sends cookies
         });
