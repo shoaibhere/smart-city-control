@@ -40,7 +40,7 @@ const DashboardLayout = () => {
   }, [navigate, toast]);
 
   const handleLogout = () => {
-    fetch('/api/logout', {
+    fetch('http://localhost:8000/api/logout', {
       method: 'POST',
       credentials: 'include',
     });

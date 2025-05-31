@@ -6,7 +6,7 @@ import {
   createUser,
   updateUserRole,
   deleteUser,
-  deactivateUser
+  toggleUserActiveStatus,
 } from '../controllers/user.controller.js';
 
 import {
@@ -16,12 +16,11 @@ import {
 } from '../middleware/auth.js';
 
 const router = express.Router();
-
+router.put('/:id/toggle', protect, toggleUserActiveStatus);
 router.get('/', protect, admin, getUsers);
 router.post('/', protect, admin, createUser);
 router.put('/:id/role', protect, admin, updateUserRole);
 router.delete('/:id', protect, admin, deleteUser);
-router.put('/:id/deactivate', protect, admin, deactivateUser);
 
 router.get('/stats', protect, async (req, res) => {
   try {

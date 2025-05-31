@@ -55,10 +55,6 @@ const Register = () => {
       console.error('Registration error:', error);
       
       // Mock successful registration for demo
-      toast({
-        title: "Registration successful (Demo Mode)",
-        description: "Please log in with your credentials",
-      });
       navigate('/login');
     } finally {
       setLoading(false);

@@ -1,29 +1,40 @@
 import User from '../models/users.model.js';
 import Department from '../models/department.js';
 
-// @desc    Get all users (Admin only)
-// @route   GET /api/users
-export const deactivateUser = async (req, res) => {
+// @desc    Toggle user active status (Admin only)
+// @route   PUT /api/users/:id/toggle
+export const toggleUserActiveStatus = async (req, res) => {
   try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    user.isActive = false;
+    user.isActive = !user.isActive;
     await user.save();
 
-    res.status(200).json({ message: 'User deactivated successfully' });
+    res.status(200).json({
+      message: `User ${user.isActive ? 'reactivated' : 'deactivated'} successfully`,
+      isActive: user.isActive,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+
 export const getUsers = async (req, res) => {
   try {
-    // Admin can see all users, department officials can see citizens
     let query = {};
+
     if (req.user.role === 'department') {
       query = { role: 'citizen' };
     }
+
+    // Exclude the currently logged-in usera
+    query._id = { $ne: req.user._id };
 
     const users = await User.find(query).select('-password');
     res.json(users);
@@ -32,6 +43,7 @@ export const getUsers = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
 
 // @desc    Create user (Admin only)
 // @route   POST /api/users
@@ -119,7 +131,7 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    await user.remove();
+    await User.findByIdAndDelete(user._id);
     res.json({ message: 'User removed' });
   } catch (err) {
     console.error(err);
